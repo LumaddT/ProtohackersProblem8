@@ -9,16 +9,13 @@ public class Add implements Cipher {
     private final byte Value;
 
     @Override
-    public void apply(byte[] bytes) {
-        for (int i = 0; i < bytes.length; i++) {
-            bytes[i] = (byte) (bytes[i] + Value);
-        }
+    public byte encrypt(byte plainText, int pos) {
+        return (byte) (plainText + pos);
+
     }
 
     @Override
-    public void applyReverse(byte[] bytes) {
-        for (int i = 0; i < bytes.length; i++) {
-            bytes[i] = (byte) (bytes[i] - Value);
-        }
+    public byte decrypt(byte cipherText, int pos) {
+        return (byte) (cipherText - pos);
     }
 }

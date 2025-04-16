@@ -1,6 +1,7 @@
 package insecure.socket.layer.Ciphers;
 
 public interface Cipher {
-    void apply(byte[] bytes);
-    void applyReverse(byte[] bytes);
+    byte encrypt(byte plainText, int pos);
+
+    byte decrypt(byte cipherText, int pos);
 }

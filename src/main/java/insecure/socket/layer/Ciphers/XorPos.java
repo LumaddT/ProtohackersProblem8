@@ -6,17 +6,13 @@ import lombok.RequiredArgsConstructor;
 public class XorPos implements Cipher {
     private final CipherTypes CipherType = CipherTypes.XOR_POS;
 
-    private final int InitialPos;
-
     @Override
-    public void apply(byte[] bytes) {
-        for (int i = 0; i < bytes.length; i++) {
-            bytes[i] = (byte) (bytes[i] ^ (i + InitialPos));
-        }
+    public byte encrypt(byte plainText, int pos) {
+        return (byte) (plainText ^ (byte) pos);
     }
 
     @Override
-    public void applyReverse(byte[] bytes) {
-        this.apply(bytes);
+    public byte decrypt(byte cipherText, int pos) {
+        return encrypt(cipherText, pos);
     }
 }

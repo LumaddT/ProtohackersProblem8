@@ -6,19 +6,13 @@ import lombok.RequiredArgsConstructor;
 public class AddPos implements Cipher {
     private final CipherTypes CipherType = CipherTypes.ADD_POS;
 
-    private final int InitialPos;
-
     @Override
-    public void apply(byte[] bytes) {
-        for (int i = 0; i < bytes.length; i++) {
-            bytes[i] = (byte) (bytes[i] + i + InitialPos);
-        }
+    public byte encrypt(byte plainText, int pos) {
+        return (byte) (plainText + pos);
     }
 
     @Override
-    public void applyReverse(byte[] bytes) {
-        for (int i = 0; i < bytes.length; i++) {
-            bytes[i] = (byte) (bytes[i] - i - InitialPos);
-        }
+    public byte decrypt(byte cipherText, int pos) {
+        return (byte) (cipherText - pos);
     }
 }

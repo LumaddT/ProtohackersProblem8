@@ -9,14 +9,12 @@ public class Xor implements Cipher {
     private final byte Value;
 
     @Override
-    public void apply(byte[] bytes) {
-        for (int i = 0; i < bytes.length; i++) {
-            bytes[i] = (byte) (bytes[i] ^ Value);
-        }
+    public byte encrypt(byte plainText, int pos) {
+        return (byte) (plainText ^ Value);
     }
 
     @Override
-    public void applyReverse(byte[] bytes) {
-        this.apply(bytes);
+    public byte decrypt(byte cipherText, int pos) {
+        return encrypt(cipherText, pos);
     }
 }

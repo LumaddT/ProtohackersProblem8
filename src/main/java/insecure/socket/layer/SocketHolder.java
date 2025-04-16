@@ -1,6 +1,6 @@
 package insecure.socket.layer;
 
-import insecure.socket.layer.exceptions.IllegalMessageException;
+import insecure.socket.layer.Ciphers.*;
 import lombok.Getter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -9,6 +9,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class SocketHolder {
     private static final Logger logger = LogManager.getLogger();
@@ -18,6 +21,11 @@ public class SocketHolder {
     private final Socket Socket;
     private final InputStream InputStream;
     private final OutputStream OutputStream;
+
+    private final List<Cipher> CipherSpec;
+
+    private int inputStreamPosition = 0;
+    private int outputCounter = 0;
 
     @Getter
     private volatile boolean ConnectionAlive = false;
@@ -43,57 +51,80 @@ public class SocketHolder {
 
         InputStream = inputStream;
         OutputStream = outputStream;
-    }
 
-    // TODO: parse and return message
-    private void readMessage() {
-        byte[] clientBytes;
-        try {
-            clientBytes = readBytes();
-        } catch (IllegalMessageException illegalMessageException) {
-            logger.info("A client sent an illegal message. Error message: {}", illegalMessageException.getMessage());
-            this.close();
-            return;
-        }
+        CipherSpec = readCiphers();
 
-        if (clientBytes == null) {
-            logger.debug("The client gracefully closed the connection.");
+        if (!isCipherSpecValid()) {
             this.close();
-            return;
         }
     }
 
-    private byte[] readBytes() throws IllegalMessageException {
-        byte[] buffer = new byte[MAX_LENGTH];
-        int i = 0;
-
-        while (i < MAX_LENGTH) {
+    private List<Cipher> readCiphers() {
+        List<Cipher> ciphers = new ArrayList<>();
+        while (true) {
             int readInt;
             try {
                 readInt = InputStream.read();
             } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-
-            if (readInt == -1) {
-                if (i > 0) {
-                    throw new IllegalMessageException("The client sent EOF before completing the message.");
-                }
-
+                logger.info("Socket {} experienced an IOException while reading the cipher spec. Error message: {}", this.hashCode(), e.getMessage());
                 return null;
             }
 
-            byte readByte = (byte) readInt;
-
-            buffer[i] = readByte;
-            if (readByte == '\n') {
-                return buffer;
+            if (readInt == -1) {
+                logger.info("Socket {} send an EOF byte while reading the cipher spec.", this.hashCode());
+                return null;
             }
 
-            i++;
-        }
+            if (readInt == 0) {
+                return Collections.unmodifiableList(ciphers);
+            }
 
-        throw new IllegalMessageException("The client sent a message too long.");
+            Cipher newCipher = parseCipher((byte) readInt);
+
+            if (newCipher == null) {
+                return null;
+            }
+
+            ciphers.add(newCipher);
+        }
+    }
+
+    private Cipher parseCipher(byte cipherIdentifier) {
+        try {
+            return switch (cipherIdentifier) {
+                case 0x01 -> new ReverseBits();
+                case 0x02 -> {
+                    int readInt = InputStream.read();
+                    if (readInt == -1) {
+                        logger.info("Socket {} send an EOF byte while reading the xor cipher argument.", this.hashCode());
+                        yield null;
+                    }
+
+                    yield new Xor((byte) readInt);
+                }
+                case 0x03 -> new XorPos();
+                case 0x04 -> {
+                    int readInt = InputStream.read();
+                    if (readInt == -1) {
+                        logger.info("Socket {} send an EOF byte while reading the add cipher argument.", this.hashCode());
+                        yield null;
+                    }
+
+                    yield new Add((byte) readInt);
+                }
+                case 0x05 -> new AddPos();
+                // This should never happen
+                default -> throw new RuntimeException("The client send an illegal cipher spec.");
+            };
+        } catch (IOException e) {
+            logger.info("Socket {} experienced an IOException while reading a cipher argument. Error message: {}", this.hashCode(), e.getMessage());
+            return null;
+        }
+    }
+
+    private boolean isCipherSpecValid() {
+        // TODO
+        return true;
     }
 
     public void close() {
