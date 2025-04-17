@@ -63,6 +63,7 @@ public class InsecureSocketLayer {
             int maxValue = Integer.MIN_VALUE;
 
             for (String toy : lineSplit) {
+                toy = toy.trim();
                 Matcher matcher = PATTERN.matcher(toy);
                 if (matcher.find()) {
                     String amountString = matcher.group(1);
@@ -81,7 +82,7 @@ public class InsecureSocketLayer {
                 socketHolder.close();
                 return;
             }
-            socketHolder.sendLine(maxToy);
+            socketHolder.sendLine(maxToy + '\n');
         }
     }
 
