@@ -8,13 +8,13 @@ public class Add implements Cipher {
 
     @Override
     public byte encrypt(byte plainText, int pos) {
-        return (byte) (plainText + pos);
+        return (byte) (plainText + Value);
 
     }
 
     @Override
     public byte decrypt(byte cipherText, int pos) {
-        return (byte) (cipherText - pos);
+        return (byte) (cipherText - Value);
     }
 
     @Override
