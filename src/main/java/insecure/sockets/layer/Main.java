@@ -1,4 +1,4 @@
-package insecure.socket.layer;
+package insecure.sockets.layer;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -11,13 +11,13 @@ public class Main {
 
         Runtime.getRuntime().addShutdownHook(new Thread(Main::shutdownRoutine));
 
-        new Thread(() -> InsecureSocketLayer.run(10_008)).start();
+        new Thread(() -> InsecureSocketsLayer.run(10_008)).start();
     }
 
     private static void shutdownRoutine() {
         logger.info("Shutting down...");
 
-        InsecureSocketLayer.stop();
+        InsecureSocketsLayer.stop();
 
         logger.info("Have a nice day!.");
     }

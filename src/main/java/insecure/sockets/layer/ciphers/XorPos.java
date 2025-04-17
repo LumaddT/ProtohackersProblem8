@@ -1,24 +1,21 @@
-package insecure.socket.layer.Ciphers;
+package insecure.sockets.layer.ciphers;
 
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class Add implements Cipher {
-    private final byte Value;
-
+public class XorPos implements Cipher {
     @Override
     public byte encrypt(byte plainText, int pos) {
-        return (byte) (plainText + Value);
-
+        return (byte) (plainText ^ (byte) pos);
     }
 
     @Override
     public byte decrypt(byte cipherText, int pos) {
-        return (byte) (cipherText - Value);
+        return encrypt(cipherText, pos);
     }
 
     @Override
     public String toString() {
-        return "Add(0x%02X)".formatted(Value);
+        return "XorPos";
     }
 }

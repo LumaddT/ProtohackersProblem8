@@ -1,4 +1,4 @@
-package insecure.socket.layer.Ciphers;
+package insecure.sockets.layer.ciphers;
 
 public class ReverseBits implements Cipher {
     @Override

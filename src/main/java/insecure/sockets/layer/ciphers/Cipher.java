@@ -1,4 +1,4 @@
-package insecure.socket.layer.Ciphers;
+package insecure.sockets.layer.ciphers;
 
 public interface Cipher {
     byte encrypt(byte plainText, int pos);

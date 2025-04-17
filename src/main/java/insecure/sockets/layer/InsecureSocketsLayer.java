@@ -1,4 +1,4 @@
-package insecure.socket.layer;
+package insecure.sockets.layer;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -10,7 +10,7 @@ import java.net.SocketTimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class InsecureSocketLayer {
+public class InsecureSocketsLayer {
     private static final Logger logger = LogManager.getLogger();
 
     private static final int TIMEOUT = 1_000;

@@ -1,6 +1,6 @@
-package insecure.socket.layer;
+package insecure.sockets.layer;
 
-import insecure.socket.layer.Ciphers.*;
+import insecure.sockets.layer.ciphers.*;
 import lombok.Getter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
