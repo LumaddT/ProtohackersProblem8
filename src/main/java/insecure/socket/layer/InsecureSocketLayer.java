@@ -48,7 +48,7 @@ public class InsecureSocketLayer {
     private static void manageSocket(Socket socket) {
         SocketHolder socketHolder = new SocketHolder(socket, 1_000);
 
-        while (socketHolder.isConnectionAlive()) {
+        while (Running && socketHolder.isConnectionAlive()) {
             String line = socketHolder.readLine();
 
             if (line == null) {
