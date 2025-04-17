@@ -4,8 +4,6 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class AddPos implements Cipher {
-    private final CipherTypes CipherType = CipherTypes.ADD_POS;
-
     @Override
     public byte encrypt(byte plainText, int pos) {
         return (byte) (plainText + pos);

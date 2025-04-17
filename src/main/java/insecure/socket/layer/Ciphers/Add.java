@@ -4,8 +4,6 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class Add implements Cipher {
-    private final CipherTypes CipherType = CipherTypes.ADD;
-
     private final byte Value;
 
     @Override

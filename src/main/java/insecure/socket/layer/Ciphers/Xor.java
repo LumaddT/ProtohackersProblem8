@@ -4,8 +4,6 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class Xor implements Cipher {
-    private final CipherTypes CipherType = CipherTypes.XOR;
-
     private final byte Value;
 
     @Override
