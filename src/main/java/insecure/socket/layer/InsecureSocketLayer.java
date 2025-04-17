@@ -7,11 +7,15 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class InsecureSocketLayer {
     private static final Logger logger = LogManager.getLogger();
 
     private static final int TIMEOUT = 1_000;
+    private static final String REGEX = "^(\\d+)x .+$";
+    private static final Pattern PATTERN = Pattern.compile(REGEX);
 
     private static volatile boolean Running = false;
 
@@ -43,6 +47,42 @@ public class InsecureSocketLayer {
 
     private static void manageSocket(Socket socket) {
         SocketHolder socketHolder = new SocketHolder(socket, 1_000);
+
+        while (socketHolder.isConnectionAlive()) {
+            String line = socketHolder.readLine();
+
+            if (line == null) {
+                logger.error("Socket {} returned a null line.", socketHolder.hashCode());
+                socketHolder.close();
+                return;
+            }
+
+            String[] lineSplit = line.split(",");
+
+            String maxToy = null;
+            int maxValue = Integer.MIN_VALUE;
+
+            for (String toy : lineSplit) {
+                Matcher matcher = PATTERN.matcher(toy);
+                if (matcher.find()) {
+                    String amountString = matcher.group(1);
+                    int amount = Integer.parseInt(amountString);
+                    if (amount > maxValue) {
+                        maxValue = amount;
+                        maxToy = toy;
+                    }
+                } else {
+                    logger.error("Toy \"{}\" in line \"{}\" did not match the regex.", toy, line);
+                }
+            }
+
+            if (maxToy == null) {
+                logger.error("Did not find a max toy in line \"{}\".", line);
+                socketHolder.close();
+                return;
+            }
+            socketHolder.sendLine(maxToy);
+        }
     }
 
     public static void stop() {
