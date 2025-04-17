@@ -21,6 +21,6 @@ public class Add implements Cipher {
 
     @Override
     public String toString() {
-        return "Add(0x%02Xd)".formatted(Value);
+        return "Add(0x%02X)".formatted(Value);
     }
 }

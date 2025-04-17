@@ -20,6 +20,6 @@ public class Xor implements Cipher {
 
     @Override
     public String toString() {
-        return "Xor(0x%02Xd)".formatted(Value);
+        return "Xor(0x%02X)".formatted(Value);
     }
 }
