@@ -15,4 +15,9 @@ public class XorPos implements Cipher {
     public byte decrypt(byte cipherText, int pos) {
         return encrypt(cipherText, pos);
     }
+
+    @Override
+    public String toString() {
+        return "XorPos";
+    }
 }

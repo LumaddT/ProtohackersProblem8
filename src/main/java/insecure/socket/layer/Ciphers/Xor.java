@@ -17,4 +17,9 @@ public class Xor implements Cipher {
     public byte decrypt(byte cipherText, int pos) {
         return encrypt(cipherText, pos);
     }
+
+    @Override
+    public String toString() {
+        return "Xor(0x%02Xd)".formatted(Value);
+    }
 }

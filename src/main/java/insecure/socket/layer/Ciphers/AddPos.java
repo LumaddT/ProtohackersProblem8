@@ -15,4 +15,10 @@ public class AddPos implements Cipher {
     public byte decrypt(byte cipherText, int pos) {
         return (byte) (cipherText - pos);
     }
+
+    @Override
+    public String toString() {
+        return "AddPos";
+    }
+
 }

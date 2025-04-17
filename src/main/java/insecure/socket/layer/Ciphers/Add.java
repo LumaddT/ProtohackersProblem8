@@ -18,4 +18,9 @@ public class Add implements Cipher {
     public byte decrypt(byte cipherText, int pos) {
         return (byte) (cipherText - pos);
     }
+
+    @Override
+    public String toString() {
+        return "Add(0x%02Xd)".formatted(Value);
+    }
 }

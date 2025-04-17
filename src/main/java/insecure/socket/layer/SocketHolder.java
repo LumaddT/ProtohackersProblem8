@@ -15,6 +15,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class SocketHolder {
     private static final Logger logger = LogManager.getLogger();
@@ -32,6 +33,8 @@ public class SocketHolder {
     private volatile boolean ConnectionAlive = false;
 
     public SocketHolder(Socket socket, int timeout) {
+        logger.info("Socket {}: Instantiating", this.hashCode());
+
         Socket = socket;
 
         InputStream inputStream;
@@ -61,7 +64,15 @@ public class SocketHolder {
 
         CipherSpec = readCiphers();
 
+        if (CipherSpec == null) {
+            this.close();
+            return;
+        }
+
+        logger.info("Socket {}: Received cipher spec {}", this.hashCode(), CipherSpec.stream().map(Cipher::toString).collect(Collectors.joining(",")));
+
         if (!isCipherSpecValid()) {
+            logger.info("Socket {}: Cipher spec is invalid", this.hashCode());
             this.close();
         }
     }
@@ -116,7 +127,7 @@ public class SocketHolder {
                         break;
                     }
                     if (readInt == -1) {
-                        logger.info("Socket {} send an EOF byte while reading the xor cipher argument.", this.hashCode());
+                        logger.info("Socket {} sent an EOF byte while reading the xor cipher argument.", this.hashCode());
                         yield null;
                     }
 
@@ -135,7 +146,7 @@ public class SocketHolder {
                         break;
                     }
                     if (readInt == -1) {
-                        logger.info("Socket {} send an EOF byte while reading the add cipher argument.", this.hashCode());
+                        logger.info("Socket {} sent an EOF byte while reading the add cipher argument.", this.hashCode());
                         yield null;
                     }
 
@@ -198,10 +209,16 @@ public class SocketHolder {
             encryptedBytes[i] = bytesRead.get(i);
         }
 
-        return new String(decrypt(encryptedBytes), StandardCharsets.US_ASCII);
+        String line = new String(decrypt(encryptedBytes), StandardCharsets.US_ASCII);
+
+        logger.info("Socket {}: Received line {}", this.hashCode(), line);
+
+        return line;
     }
 
     public void sendLine(String line) {
+        logger.info("Socket {}: Sent line {}", this.hashCode(), line);
+
         byte[] plainText = line.getBytes(StandardCharsets.US_ASCII);
         byte[] encryptedText = encrypt(plainText);
 
