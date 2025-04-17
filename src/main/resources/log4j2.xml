@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+    <Appenders>
+        <Console name="info-warn-error-fatal" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+            <LevelRangeFilter minLevel="FATAL" maxLevel="TRACE" onMatch="ACCEPT" onMismatch="DENY"/>
+        </Console>
+    </Appenders>
+    <Loggers>
+        <Root level="INFO">
+            <AppenderRef ref="info-warn-error-fatal"/>
+        </Root>
+    </Loggers>
+</Configuration>
