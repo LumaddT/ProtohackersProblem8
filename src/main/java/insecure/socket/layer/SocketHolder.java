@@ -19,8 +19,6 @@ import java.util.List;
 public class SocketHolder {
     private static final Logger logger = LogManager.getLogger();
 
-    private static final int MAX_LENGTH = 5_000;
-
     private final Socket Socket;
     private final InputStream InputStream;
     private final OutputStream OutputStream;
@@ -153,9 +151,15 @@ public class SocketHolder {
         }
     }
 
+    // Not the greatest way but it's quick and it should work
     private boolean isCipherSpecValid() {
-        // TODO
-        return true;
+        for (byte i = 0; i < 10; i++) {
+            if (encrypt(i) != i) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public String readLine() {
