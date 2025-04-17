@@ -165,10 +165,13 @@ public class SocketHolder {
     // Not the greatest way but it's quick and it should work
     private boolean isCipherSpecValid() {
         for (byte i = 0; i < 10; i++) {
+            OutputStreamPosition = i;
             if (encrypt(i) != i) {
                 return true;
             }
         }
+
+        OutputStreamPosition = 0;
 
         return false;
     }
