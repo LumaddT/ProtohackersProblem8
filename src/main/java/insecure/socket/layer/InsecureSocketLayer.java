@@ -1,6 +1,5 @@
 package insecure.socket.layer;
 
-import insecure.socket.layer.exceptions.IllegalMessageException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -43,7 +42,7 @@ public class InsecureSocketLayer {
     }
 
     private static void manageSocket(Socket socket) {
-        SocketHolder socketHolder = new SocketHolder(socket);
+        SocketHolder socketHolder = new SocketHolder(socket, 1_000);
     }
 
     public static void stop() {

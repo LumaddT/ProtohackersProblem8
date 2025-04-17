@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,7 +33,7 @@ public class SocketHolder {
     @Getter
     private volatile boolean ConnectionAlive = false;
 
-    public SocketHolder(Socket socket) {
+    public SocketHolder(Socket socket, int timeout) {
         Socket = socket;
 
         InputStream inputStream;
@@ -53,6 +55,12 @@ public class SocketHolder {
         InputStream = inputStream;
         OutputStream = outputStream;
 
+        try {
+            Socket.setSoTimeout(timeout);
+        } catch (SocketException e) {
+            this.close();
+        }
+
         CipherSpec = readCiphers();
 
         if (!isCipherSpecValid()) {
@@ -62,10 +70,12 @@ public class SocketHolder {
 
     private List<Cipher> readCiphers() {
         List<Cipher> ciphers = new ArrayList<>();
-        while (true) {
+        while (ConnectionAlive) {
             int readInt;
             try {
                 readInt = InputStream.read();
+            } catch (SocketTimeoutException e) {
+                continue;
             } catch (IOException e) {
                 logger.info("Socket {} experienced an IOException while reading the cipher spec. Error message: {}", this.hashCode(), e.getMessage());
                 return null;
@@ -88,6 +98,8 @@ public class SocketHolder {
 
             ciphers.add(newCipher);
         }
+
+        return null;
     }
 
     private Cipher parseCipher(byte cipherIdentifier) {
@@ -95,7 +107,16 @@ public class SocketHolder {
             return switch (cipherIdentifier) {
                 case 0x01 -> new ReverseBits();
                 case 0x02 -> {
-                    int readInt = InputStream.read();
+                    int readInt = -1;
+                    while (ConnectionAlive) {
+                        try {
+                            readInt = InputStream.read();
+                        } catch (SocketTimeoutException e) {
+                            continue;
+                        }
+
+                        break;
+                    }
                     if (readInt == -1) {
                         logger.info("Socket {} send an EOF byte while reading the xor cipher argument.", this.hashCode());
                         yield null;
@@ -105,7 +126,16 @@ public class SocketHolder {
                 }
                 case 0x03 -> new XorPos();
                 case 0x04 -> {
-                    int readInt = InputStream.read();
+                    int readInt = -1;
+                    while (ConnectionAlive) {
+                        try {
+                            readInt = InputStream.read();
+                        } catch (SocketTimeoutException e) {
+                            continue;
+                        }
+
+                        break;
+                    }
                     if (readInt == -1) {
                         logger.info("Socket {} send an EOF byte while reading the add cipher argument.", this.hashCode());
                         yield null;
@@ -133,13 +163,19 @@ public class SocketHolder {
         byte byteRead;
 
         do {
-            int intRead;
-            try {
-                intRead = InputStream.read();
-            } catch (IOException e) {
-                logger.info("Socket {} experienced an IOException while reading the text line. Error message: {}", this.hashCode(), e.getMessage());
-                this.close();
-                return null;
+            int intRead = -1;
+            while (ConnectionAlive) {
+                try {
+                    intRead = InputStream.read();
+                } catch (SocketTimeoutException e) {
+                    continue;
+                } catch (IOException e) {
+                    logger.info("Socket {} experienced an IOException while reading the text line. Error message: {}", this.hashCode(), e.getMessage());
+                    this.close();
+                    return null;
+                }
+
+                break;
             }
             if (intRead == -1) {
                 logger.info("Socket {} reached EOF while reading the text line.", this.hashCode());
