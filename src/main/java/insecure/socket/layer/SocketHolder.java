@@ -174,7 +174,7 @@ public class SocketHolder {
     }
 
     public String readLine() {
-        List<Byte> bytesRead = new ArrayList<>();
+        List<Byte> decryptedBytesRead = new ArrayList<>();
         byte byteRead;
 
         do {
@@ -198,18 +198,18 @@ public class SocketHolder {
                 return null;
             }
 
-            byteRead = (byte) intRead;
+            byteRead = decrypt((byte) intRead);
+            InputStreamPosition++;
 
-            bytesRead.add(byteRead);
+            decryptedBytesRead.add(byteRead);
         }
         while (byteRead != '\n');
-
-        byte[] encryptedBytes = new byte[bytesRead.size()];
-        for (int i = 0; i < bytesRead.size(); i++) {
-            encryptedBytes[i] = bytesRead.get(i);
+        byte[] decryptedBytesReadArray = new byte[decryptedBytesRead.size()];
+        for (int i = 0; i < decryptedBytesRead.size(); i++) {
+            decryptedBytesReadArray[i] = decryptedBytesRead.get(i);
         }
 
-        String line = new String(decrypt(encryptedBytes), StandardCharsets.US_ASCII);
+        String line = new String(decryptedBytesReadArray, StandardCharsets.US_ASCII);
 
         logger.info("Socket {}: Received line {}", this.hashCode(), line);
 
@@ -228,16 +228,6 @@ public class SocketHolder {
             logger.info("Socket {} experienced an IOException while sending a line. Error message: {}", this.hashCode(), e.getMessage());
             this.close();
         }
-    }
-
-    private byte[] decrypt(byte[] encryptedBytes) {
-        byte[] decryptedBytes = new byte[encryptedBytes.length];
-        for (int i = 0; i < encryptedBytes.length; i++) {
-            decryptedBytes[i] = decrypt(encryptedBytes[i]);
-            InputStreamPosition++;
-        }
-
-        return decryptedBytes;
     }
 
     private byte decrypt(byte encryptedByte) {
