@@ -161,7 +161,16 @@ public class SocketHolder {
         return new String(decrypt(encryptedBytes), StandardCharsets.US_ASCII);
     }
 
-    public void sendLine() {
+    public void sendLine(String line) {
+        byte[] plainText = line.getBytes(StandardCharsets.US_ASCII);
+        byte[] encryptedText = encrypt(plainText);
+
+        try {
+            OutputStream.write(encryptedText);
+        } catch (IOException e) {
+            logger.info("Socket {} experienced an IOException while sending a line. Error message: {}", this.hashCode(), e.getMessage());
+            this.close();
+        }
     }
 
     private byte[] decrypt(byte[] encryptedBytes) {
