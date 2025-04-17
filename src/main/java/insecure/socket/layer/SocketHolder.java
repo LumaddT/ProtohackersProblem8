@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -24,8 +25,8 @@ public class SocketHolder {
 
     private final List<Cipher> CipherSpec;
 
-    private int inputStreamPosition = 0;
-    private int outputCounter = 0;
+    private int InputStreamPosition = 0;
+    private int OutputStreamPosition = 0;
 
     @Getter
     private volatile boolean ConnectionAlive = false;
@@ -125,6 +126,78 @@ public class SocketHolder {
     private boolean isCipherSpecValid() {
         // TODO
         return true;
+    }
+
+    public String readLine() {
+        List<Byte> bytesRead = new ArrayList<>();
+        byte byteRead;
+
+        do {
+            int intRead;
+            try {
+                intRead = InputStream.read();
+            } catch (IOException e) {
+                logger.info("Socket {} experienced an IOException while reading the text line. Error message: {}", this.hashCode(), e.getMessage());
+                this.close();
+                return null;
+            }
+            if (intRead == -1) {
+                logger.info("Socket {} reached EOF while reading the text line.", this.hashCode());
+                this.close();
+                return null;
+            }
+
+            byteRead = (byte) intRead;
+
+            bytesRead.add(byteRead);
+        }
+        while (byteRead != '\n');
+
+        byte[] encryptedBytes = new byte[bytesRead.size()];
+        for (int i = 0; i < bytesRead.size(); i++) {
+            encryptedBytes[i] = bytesRead.get(i);
+        }
+
+        return new String(decrypt(encryptedBytes), StandardCharsets.US_ASCII);
+    }
+
+    public void sendLine() {
+    }
+
+    private byte[] decrypt(byte[] encryptedBytes) {
+        byte[] decryptedBytes = new byte[encryptedBytes.length];
+        for (int i = 0; i < encryptedBytes.length; i++) {
+            decryptedBytes[i] = decrypt(encryptedBytes[i]);
+            InputStreamPosition++;
+        }
+
+        return decryptedBytes;
+    }
+
+    private byte decrypt(byte encryptedByte) {
+        for (Cipher cipher : CipherSpec.reversed()) {
+            encryptedByte = cipher.decrypt(encryptedByte, InputStreamPosition);
+        }
+
+        return encryptedByte;
+    }
+
+    private byte[] encrypt(byte[] plainText) {
+        byte[] encryptedBytes = new byte[plainText.length];
+        for (int i = 0; i < plainText.length; i++) {
+            encryptedBytes[i] = encrypt(plainText[i]);
+            OutputStreamPosition++;
+        }
+
+        return encryptedBytes;
+    }
+
+    private byte encrypt(byte encryptedByte) {
+        for (Cipher cipher : CipherSpec) {
+            encryptedByte = cipher.encrypt(encryptedByte, OutputStreamPosition);
+        }
+
+        return encryptedByte;
     }
 
     public void close() {
